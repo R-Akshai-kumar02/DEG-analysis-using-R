@@ -96,52 +96,6 @@ ggplot(top_genes, aes(x = reorder(SYMBOL, log2FoldChange), y = log2FoldChange, f
   labs(title = "Top 10 DEGs", x = "Gene Symbol", y = "log2 Fold Change") +
   theme_minimal()
 
-#functional analysis
-#go ontology
-
-go <- enrichGO(
-  gene = deg$ENTREZID,
-  OrgDb = org.Hs.eg.db,
-  ont = "ALL",
-  pAdjustMethod = "BH",
-  pvalueCutoff = 0.05,
-  qvalueCutoff = 0.2,
-  readable = TRUE
-)
-go_df <- as.data.frame(go)
-top_go <- go_df %>% arrange(p.adjust) %>% head(10)
-top_go[, c("ID", "Description", "GeneRatio", "p.adjust", "geneID")]
-#plot for GO
-
-barplot(go, showCategory=10, title="Top 10 Enriched GO Terms")
-dotplot(go, showCategory=10, title="GO Enrichment Dotplot")
-
-#KEEG
-kegg <- enrichKEGG(
-  gene = deg$ENTREZID,
-  organism = "hsa",
-  pvalueCutoff = 0.05
-)
-#gene symbol
-kegg <- setReadable(kegg, OrgDb = org.Hs.eg.db, keyType = "ENTREZID")
-kegg_df <- as.data.frame(kegg)
-top_kegg <- kegg_df %>% arrange(p.adjust) %>% head(10)
-tp <- top_kegg[, c("ID", "Description", "GeneRatio", "p.adjust", "geneID")]
-top<- as.data.frame(tp)
-#plot kegg 
-barplot(kegg, showCategory = 10, title = "Top 10 KEGG Pathways")
-kegg_up <- kegg
-# We manually overwrite the gene list in the enrichment object for visualization purposes
-kegg_up@gene <- deg$ENTREZID[deg$log2FoldChange > 0]
-
-library(enrichplot)
-cnetplot(kegg_up, 
-         showCategory = 5, 
-         foldChange = deg$log2FoldChange, 
-         circular = FALSE, 
-         colorEdge = TRUE) + 
-  ggtitle("Network of Upregulated Genes in Top KEGG Pathways")
-
 
 
 
